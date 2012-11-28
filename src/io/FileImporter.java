@@ -7,12 +7,13 @@ import database.*;
 
 public class FileImporter {
 	
-	String filename;
+	private String filename;
 	
-	List<Table> tables;
+	private List<Table> tables;
 	
 	public FileImporter(String filename) {
 		this.filename = filename;
+		tables = new ArrayList<Table>();
 		populateTables();
 	}
 	
@@ -29,11 +30,33 @@ public class FileImporter {
 			
 			Statement statement = connection.createStatement();
 			
-			String sql = "";
+			//sql to create a table list
+			String sql = "select tbl_name from sqlite_master where type='table'";
 			
 			ResultSet rs = statement.executeQuery(sql);
 			
+			while (rs.next()) {
+				String tableName = rs.getString(1);
+				Table table = new Table(tableName);
+				tables.add(table);
+			}
 			
+			for (Table table : tables)
+			{
+				String s = table.getName();
+				sql = "pragma table_info(" + s + ")";
+				rs = statement.executeQuery(sql);
+				while (rs.next()) {
+					String columnName = rs.getString(2);
+					String columnType = rs.getString(3);
+					
+					Column column = new Column(columnName, columnType);
+					
+					table.addColumn(column);
+				}
+			}
+			statement.close();
+			connection.close();
 					
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -43,12 +66,13 @@ public class FileImporter {
 			e.printStackTrace();
 		}
 		
-		
-		
-		
+		for (Table table : tables)
+			System.out.println(table.toString());
 	}
 	
-	
+	public static void main(String args[]) {
+		FileImporter importer = new FileImporter("temp.db");
+	}
 	
 
 }
