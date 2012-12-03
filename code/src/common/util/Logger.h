@@ -1,6 +1,8 @@
 #ifndef _LOGGER_H
 #define _LOGGER_H
 
+#include <fstream>
+
 class Logger {
 
 public:
@@ -13,7 +15,8 @@ public:
 
 private:
     static Logger *instance;
-
+    
+    std::fstream loggerStream;
     Logger();
     Logger(const Logger &theLogger);
 };
